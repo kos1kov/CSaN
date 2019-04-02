@@ -13,20 +13,26 @@ namespace P2PChat
     {
         static void Main(string[] args)
         {
-
-            Chat chat = new Chat();
+            Console.WriteLine("enter your name");
+            string data = Console.ReadLine();
+            Chat chat = new Chat(data);
+            chat.SendMessage();
+            
             
             Thread ListenThread = new Thread(new ThreadStart(chat.Listen));
             ListenThread.Start();
+            Thread ListenThread2 = new Thread(new ThreadStart(chat.TCPListen));
+            ListenThread2.Start();
+           
+              
+            
 
-                string data = Console.ReadLine();
-                chat.SendMessage(data);
-          
-          
-            // data = Console.ReadLine();
-            // chat.SendMessageTCP(data);
-            // Thread ListenThread2 = new Thread(new ThreadStart(chat.ListenTCP));
-            // ListenThread2.Start();
+            while (true)
+            {
+                 data = Console.ReadLine();
+                chat.BroadcastMessage(data);
+            }
+
 
 
         }
