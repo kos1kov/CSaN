@@ -6,23 +6,23 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
+using System.IO;
 
 namespace P2PChat
 {
    public class Chat
     {
         const int TCPMessagePort = 8888;
+        const int TCPHistoryPort = 13000;
         private UdpClient udpclient;
-    //    private TcpClient tcpclient;
-    //    private NetworkStream stream;
         private string ClientName;
+        public static List<string> HistoryList;
         private IPAddress multicastaddress;
         private IPEndPoint remoteep;
         private TcpListener tcpListener { get; set; }
-        //  public void SendOpenMessage(string data);
-        //  public void Listen();
         public Chat(string name)
         {
+            HistoryList = new List<string>();
             ClientName = name;
             multicastaddress = IPAddress.Parse("239.0.0.222"); // один из зарезервированных для локальных нужд UDP адресов
             udpclient = new UdpClient();
@@ -36,8 +36,9 @@ namespace P2PChat
             Byte[] buffer = Encoding.UTF8.GetBytes(ClientName);
 
             udpclient.Send(buffer, buffer.Length, remoteep);
+
         }
-        private int Number = 0;
+       
         private List<UDPUser> ConnectedUser { get; set; }
         
 
@@ -61,6 +62,7 @@ namespace P2PChat
 
             while (true)
             {
+                int Number = 0;
                 Byte[] data = client.Receive(ref localEp);
                 if (ConnectedUser.Find(x => x.ipAddress.ToString() == localEp.Address.ToString()) == null)
                 {
@@ -68,20 +70,20 @@ namespace P2PChat
                     if (formatted_data != ClientName)
                     {
 
-
-                        var username = "User" + formatted_data;
                         ConnectedUser.Add(new UDPUser()
                         {
                             chatConnection = null,
-                            username = username,
+                            username = formatted_data,
                             ipAddress = localEp.Address,
                             IsConnected = true
 
                         });
-                        Console.WriteLine(ConnectedUser[Number].username);
-                        Console.WriteLine(ConnectedUser[Number].ipAddress);
+                        
+                        Console.WriteLine("USER " + ConnectedUser[Number].username +" Connected");
+                        HistoryList.Add("USER " + ConnectedUser[Number].username + " Connected" + " " );
+                        Number = ConnectedUser.FindIndex(x => x.ipAddress.ToString() == localEp.Address.ToString());
                         initTCP(Number);
-                        Number++;
+                        
 
                     }
                 }
@@ -89,8 +91,7 @@ namespace P2PChat
         }
         private void initTCP(int index)
         {
-            if (ConnectedUser[index].chatConnection != null && ConnectedUser[index].chatConnection.Connected)
-                return;
+
             SendMessage();
             var newtcpConnect = new TcpClient();
             newtcpConnect.Connect(new IPEndPoint(ConnectedUser[index].ipAddress, TCPMessagePort)); //establish connection
@@ -99,65 +100,101 @@ namespace P2PChat
         }
         public void TCPListen()
         {
-            try
-            {
                 tcpListener = new TcpListener(IPAddress.Any, 8888);
                 tcpListener.Start();
-                Console.WriteLine("Сервер запущен. Ожидание подключений...");
 
                 while (true)
                 {
                     TcpClient tcpClient = tcpListener.AcceptTcpClient();
-                    var address = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
-                    ConnectedUser.Add(new UDPUser()
-                    {
-                        chatConnection = tcpClient,
-                        ipAddress = address,
-                        IsConnected = true
-                    });
-                   
-                    
-                    Thread tcp = new Thread(() => TcpMessage(tcpClient, "u", true));
+                IPAddress address1 = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
+                string Name = ConnectedUser.Find(x => x.ipAddress.ToString() == address1.ToString()).username;
+                    Thread tcp = new Thread(() => TcpMessage(tcpClient, Name, true));
                     tcp.Start();
                     
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-               
-            }
+            
         }
         private void TcpMessage(TcpClient connection, string username, bool IsLocalConnection)
         {
             NetworkStream stream = connection.GetStream();
-            while (IsLocalConnection) {
-               
-                byte[] data = new byte[64]; // буфер для получаемых данных
-                StringBuilder builder = new StringBuilder();
-                string message;
-                int bytes = 0;
-                do
+            try
+            {
+                while (IsLocalConnection)
                 {
-                    bytes = stream.Read(data, 0, data.Length);
-                    builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+
+                    byte[] data = new byte[64]; // буфер для получаемых данных
+                    StringBuilder builder = new StringBuilder();
+                    string message;
+                    int bytes = 0;
+                    do
+                    {
+                        bytes = stream.Read(data, 0, data.Length);
+                        builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+                    }
+                    while (stream.DataAvailable);
+                    message = builder.ToString();
+                    
+                    Console.WriteLine(message);
+                    Console.WriteLine(DateTime.Now.ToLongTimeString() +"\n");
+                    HistoryList.Add(message  +" " + DateTime.Now.ToLongTimeString() + "\n");
                 }
-                while (stream.DataAvailable);
-                message = builder.ToString();
-                Console.WriteLine(message);
+            }
+            catch
+            {
+                Console.WriteLine(username +" покинул чат"); //соединение было прервано
+                HistoryList.Add(username + " покинул чат");
+                var address = ((IPEndPoint)connection.Client.RemoteEndPoint).Address;
+                ConnectedUser.RemoveAll(X => X.ipAddress.ToString() == address.ToString());
+                Console.WriteLine(address);
+                if (stream != null)
+                    stream.Close();//отключение потока
+                if (connection != null)
+                    connection.Close();//отключение клиента
+                
             }
             
         }
         protected internal void BroadcastMessage(string message)
         {
-            ConnectedUser.ForEach(async client =>
+           
+            message = ClientName + ": " + message;
+            HistoryList.Add(message + " " + DateTime.Now.ToLongTimeString());
+            var messageBytes = Encoding.UTF8.GetBytes(message);
+            ConnectedUser.ForEach( client =>
             {
                 var clientStream = client.chatConnection.GetStream();
-                var messageBytes = Encoding.UTF8.GetBytes(message + "\r\n");
-                
-                await clientStream.WriteAsync(messageBytes, 0, messageBytes.Length);
+
+                 clientStream.Write(messageBytes, 0, messageBytes.Length);
             });
         }
+        public void RecvHistory()
+        {
+            if(ConnectedUser.Count == 0)
+            {
+                return;
+            }
+            TcpClient HistoryClient = new TcpClient();
+            try
+            {
+                HistoryClient.Connect(new IPEndPoint(ConnectedUser[0].ipAddress, TCPHistoryPort));
 
+                var connectionStream = HistoryClient.GetStream();
+                var History = new StreamReader(connectionStream);
+                while (true)
+                {
+                    
+                    string line;
+                    if ((line = History.ReadLine()) != null)
+                    {
+                       HistoryList.Add(line);
+                    }
+                    else
+                        return;
+                }
+
+            }
+            catch { return; }
+
+        }
     }
 }

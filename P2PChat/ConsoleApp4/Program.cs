@@ -13,27 +13,51 @@ namespace P2PChat
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("enter your name");
+            try {
+
+                Console.WriteLine("enter your name");
             string data = Console.ReadLine();
             Chat chat = new Chat(data);
+            ChatHistrory chatHistrory = new ChatHistrory();
             chat.SendMessage();
-            
-            
+
+        
             Thread ListenThread = new Thread(new ThreadStart(chat.Listen));
             ListenThread.Start();
-            Thread ListenThread2 = new Thread(new ThreadStart(chat.TCPListen));
+                Thread.Sleep(2000);
+                Console.WriteLine();
+                chat.RecvHistory();
+                Thread ListenThread2 = new Thread(new ThreadStart(chat.TCPListen));
             ListenThread2.Start();
+               
+                Thread ListenThread3 = new Thread(new ThreadStart(chatHistrory.HistoryListen));
+                ListenThread3.Start();
+                
+            if(Chat.HistoryList.Count != 0) {
+                    Console.WriteLine("history start");
+                    foreach (var text in Chat.HistoryList)
+                    {
+                        Console.WriteLine(text);
+                    }
+                    Console.WriteLine("history end");
+                }
            
-              
-            
 
-            while (true)
+
+                while (true)
             {
-                 data = Console.ReadLine();
-                chat.BroadcastMessage(data);
+                    data = Console.ReadLine();
+                    Console.WriteLine(DateTime.Now.ToLongTimeString());
+                    Console.WriteLine();
+                    chat.BroadcastMessage(data);
             }
 
 
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
         }
     }
