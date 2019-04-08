@@ -5,12 +5,6 @@ C:\Users\dimak\source\repos\ConsoleApp4\ConsoleApp4\obj\Debug\P2PChat.csprojAsse
 C:\Users\dimak\source\repos\ConsoleApp4\ConsoleApp4\obj\Debug\P2PChat.csproj.CoreCompileInputs.cache
 C:\Users\dimak\source\repos\ConsoleApp4\ConsoleApp4\obj\Debug\ConsoleApp4.exe
 C:\Users\dimak\source\repos\ConsoleApp4\ConsoleApp4\obj\Debug\ConsoleApp4.pdb
-C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.exe.config
-C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.exe
-C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.pdb
-C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\obj\Debug\P2PChat.csproj.CoreCompileInputs.cache
-C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\obj\Debug\ConsoleApp4.exe
-C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\obj\Debug\ConsoleApp4.pdb
 C:\Users\dimak\OneDrive\Рабочий стол\CSaN-master\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.exe.config
 C:\Users\dimak\OneDrive\Рабочий стол\CSaN-master\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.exe
 C:\Users\dimak\OneDrive\Рабочий стол\CSaN-master\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.pdb
@@ -18,3 +12,9 @@ C:\Users\dimak\OneDrive\Рабочий стол\CSaN-master\P2PChat\ConsoleApp4\
 C:\Users\dimak\OneDrive\Рабочий стол\CSaN-master\P2PChat\ConsoleApp4\obj\Debug\ConsoleApp4.exe
 C:\Users\dimak\OneDrive\Рабочий стол\CSaN-master\P2PChat\ConsoleApp4\obj\Debug\ConsoleApp4.pdb
 C:\Users\dimak\OneDrive\Рабочий стол\CSaN-master\P2PChat\ConsoleApp4\obj\Debug\P2PChat.csprojAssemblyReference.cache
+C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.exe.config
+C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.exe
+C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\bin\Debug\ConsoleApp4.pdb
+C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\obj\Debug\P2PChat.csproj.CoreCompileInputs.cache
+C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\obj\Debug\ConsoleApp4.exe
+C:\Users\dimak\OneDrive\Документы\GitHub\CSaN\P2PChat\ConsoleApp4\obj\Debug\ConsoleApp4.pdb

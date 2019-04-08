@@ -13,27 +13,29 @@ namespace P2PChat
     {
         static void Main(string[] args)
         {
-            try {
+            try
+            {
 
                 Console.WriteLine("enter your name");
-            string data = Console.ReadLine();
-            Chat chat = new Chat(data);
-            ChatHistrory chatHistrory = new ChatHistrory();
-            chat.SendMessage();
+                string data = Console.ReadLine();
+                Chat chat = new Chat(data);
+                ChatHistrory chatHistrory = new ChatHistrory();
+                chat.SendMessage();
 
-        
-            Thread ListenThread = new Thread(new ThreadStart(chat.Listen));
-            ListenThread.Start();
-                Thread.Sleep(2000);
+
+                Thread ListenThread = new Thread(new ThreadStart(chat.Listen));
+                ListenThread.Start();
+                
                 Console.WriteLine();
-                chat.RecvHistory();
-                Thread ListenThread2 = new Thread(new ThreadStart(chat.TCPListen));
-            ListenThread2.Start();
                
+                Thread ListenThread2 = new Thread(new ThreadStart(chat.TCPListen));
+                ListenThread2.Start();
+
                 Thread ListenThread3 = new Thread(new ThreadStart(chatHistrory.HistoryListen));
                 ListenThread3.Start();
-                
-            if(Chat.HistoryList.Count != 0) {
+
+                if (Chat.HistoryList.Count != 0)
+                {
                     Console.WriteLine("history start");
                     foreach (var text in Chat.HistoryList)
                     {
@@ -41,16 +43,30 @@ namespace P2PChat
                     }
                     Console.WriteLine("history end");
                 }
-           
+
 
 
                 while (true)
-            {
+                {
                     data = Console.ReadLine();
                     Console.WriteLine(DateTime.Now.ToLongTimeString());
                     Console.WriteLine();
                     chat.BroadcastMessage(data);
-            }
+                    if(data == "!history")
+                    {
+                        chat.RecvHistory();
+                        Thread.Sleep(2000);
+                        if (Chat.HistoryList.Count != 0)
+                        {
+                            Console.WriteLine("history start");
+                            foreach (var text in Chat.HistoryList)
+                            {
+                                Console.WriteLine(text);
+                            }
+                            Console.WriteLine("history end");
+                        }
+                    }
+                }
 
 
             }

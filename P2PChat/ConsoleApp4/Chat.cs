@@ -10,7 +10,7 @@ using System.IO;
 
 namespace P2PChat
 {
-   public class Chat
+    public class Chat
     {
         const int TCPMessagePort = 8888;
         const int TCPHistoryPort = 13000;
@@ -29,7 +29,7 @@ namespace P2PChat
             ConnectedUser = new List<UDPUser>();
             udpclient.JoinMulticastGroup(multicastaddress);
             remoteep = new IPEndPoint(multicastaddress, 2222);
-           
+
         }
         public void SendMessage()
         {
@@ -38,9 +38,9 @@ namespace P2PChat
             udpclient.Send(buffer, buffer.Length, remoteep);
 
         }
-       
+
         private List<UDPUser> ConnectedUser { get; set; }
-        
+
 
         public void Listen()
         {
@@ -76,14 +76,14 @@ namespace P2PChat
                             username = formatted_data,
                             ipAddress = localEp.Address,
                             IsConnected = true
-
                         });
-                        
-                        Console.WriteLine("USER " + ConnectedUser[Number].username +" Connected");
-                        HistoryList.Add("USER " + ConnectedUser[Number].username + " Connected" + " " );
+
+                        Console.WriteLine("USER " + ConnectedUser[Number].username + " Connected");
+                        Console.WriteLine("Type your Name pls");
+                        HistoryList.Add("USER " + ConnectedUser[Number].username + " Connected" + " ");
                         Number = ConnectedUser.FindIndex(x => x.ipAddress.ToString() == localEp.Address.ToString());
                         initTCP(Number);
-                        
+
 
                     }
                 }
@@ -92,27 +92,45 @@ namespace P2PChat
         private void initTCP(int index)
         {
 
-            SendMessage();
+           // SendMessage();
             var newtcpConnect = new TcpClient();
             newtcpConnect.Connect(new IPEndPoint(ConnectedUser[index].ipAddress, TCPMessagePort)); //establish connection
             ConnectedUser[index].chatConnection = newtcpConnect;
-           
+            Thread tcp = new Thread(() => TcpMessage(newtcpConnect, ConnectedUser[index].username, true));
+            tcp.Start();
         }
         public void TCPListen()
         {
-                tcpListener = new TcpListener(IPAddress.Any, 8888);
-                tcpListener.Start();
+            tcpListener = new TcpListener(IPAddress.Any, 8888);
+            tcpListener.Start();
 
-                while (true)
-                {
-                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
+            while (true)
+            {
+                TcpClient tcpClient = tcpListener.AcceptTcpClient();
                 IPAddress address1 = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
-                string Name = ConnectedUser.Find(x => x.ipAddress.ToString() == address1.ToString()).username;
-                    Thread tcp = new Thread(() => TcpMessage(tcpClient, Name, true));
-                    tcp.Start();
-                    
+                string Name;
+                  if (ConnectedUser.FindIndex(x => x.ipAddress.ToString() == address1.ToString()) == -1){
+                    ConnectedUser.Add(new UDPUser()
+                    {
+                        chatConnection = tcpClient,
+                        username = "unknown",
+                        ipAddress = address1,
+                        IsConnected = true
+
+                    });
+                    Name = "unknown";
+
                 }
-            
+                else
+                {
+                    Name = ConnectedUser.Find(x => x.ipAddress.ToString() == address1.ToString()).username;
+                }
+               
+                Thread tcp = new Thread(() => TcpMessage(tcpClient, Name, true));
+                tcp.Start();
+
+            }
+
         }
         private void TcpMessage(TcpClient connection, string username, bool IsLocalConnection)
         {
@@ -121,7 +139,7 @@ namespace P2PChat
             {
                 while (IsLocalConnection)
                 {
-
+                   
                     byte[] data = new byte[64]; // буфер для получаемых данных
                     StringBuilder builder = new StringBuilder();
                     string message;
@@ -133,15 +151,19 @@ namespace P2PChat
                     }
                     while (stream.DataAvailable);
                     message = builder.ToString();
-                    
-                    Console.WriteLine(message);
-                    Console.WriteLine(DateTime.Now.ToLongTimeString() +"\n");
-                    HistoryList.Add(message  +" " + DateTime.Now.ToLongTimeString() + "\n");
+                    if(username == "unknown")
+                    {
+                        username = message;
+                        ConnectedUser[(ConnectedUser.FindIndex(x => x.ipAddress.ToString() == ((IPEndPoint)connection.Client.RemoteEndPoint).Address.ToString()))].username = message;
+                    }
+                    Console.WriteLine(username + " :" + message);
+                    Console.WriteLine(DateTime.Now.ToLongTimeString() + "\n");
+                    HistoryList.Add(username + " :"+ message + " " + DateTime.Now.ToLongTimeString() + "\n");
                 }
             }
             catch
             {
-                Console.WriteLine(username +" покинул чат"); //соединение было прервано
+                Console.WriteLine(username + " покинул чат"); //соединение было прервано
                 HistoryList.Add(username + " покинул чат");
                 var address = ((IPEndPoint)connection.Client.RemoteEndPoint).Address;
                 ConnectedUser.RemoveAll(X => X.ipAddress.ToString() == address.ToString());
@@ -150,26 +172,26 @@ namespace P2PChat
                     stream.Close();//отключение потока
                 if (connection != null)
                     connection.Close();//отключение клиента
-                
+
             }
-            
+
         }
         protected internal void BroadcastMessage(string message)
         {
-           
-            message = ClientName + ": " + message;
-            HistoryList.Add(message + " " + DateTime.Now.ToLongTimeString());
-            var messageBytes = Encoding.UTF8.GetBytes(message);
-            ConnectedUser.ForEach( client =>
-            {
-                var clientStream = client.chatConnection.GetStream();
 
-                 clientStream.Write(messageBytes, 0, messageBytes.Length);
-            });
+            
+            HistoryList.Add(ClientName +" :"  + message + " " + DateTime.Now.ToLongTimeString());
+            var messageBytes = Encoding.UTF8.GetBytes(message);
+            ConnectedUser.ForEach(client =>
+           {
+               var clientStream = client.chatConnection.GetStream();
+
+               clientStream.Write(messageBytes, 0, messageBytes.Length);
+           });
         }
         public void RecvHistory()
         {
-            if(ConnectedUser.Count == 0)
+            if (ConnectedUser.Count == 0)
             {
                 return;
             }
@@ -182,11 +204,11 @@ namespace P2PChat
                 var History = new StreamReader(connectionStream);
                 while (true)
                 {
-                    
+
                     string line;
                     if ((line = History.ReadLine()) != null)
                     {
-                       HistoryList.Add(line);
+                        HistoryList.Add(line);
                     }
                     else
                         return;
