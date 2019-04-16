@@ -79,7 +79,7 @@ namespace P2PChat
                         });
 
                         Console.WriteLine("USER " + ConnectedUser[Number].username + " Connected");
-                        Console.WriteLine("Type your Name pls");
+                  
                         HistoryList.Add("USER " + ConnectedUser[Number].username + " Connected" + " ");
                         Number = ConnectedUser.FindIndex(x => x.ipAddress.ToString() == localEp.Address.ToString());
                         initTCP(Number);
@@ -98,6 +98,7 @@ namespace P2PChat
             ConnectedUser[index].chatConnection = newtcpConnect;
             Thread tcp = new Thread(() => TcpMessage(newtcpConnect, ConnectedUser[index].username, true));
             tcp.Start();
+            BroadcastMessage(ClientName);
         }
         public void TCPListen()
         {
@@ -154,11 +155,16 @@ namespace P2PChat
                     if(username == "unknown")
                     {
                         username = message;
+                        Console.WriteLine("User " + username + " Connected");
                         ConnectedUser[(ConnectedUser.FindIndex(x => x.ipAddress.ToString() == ((IPEndPoint)connection.Client.RemoteEndPoint).Address.ToString()))].username = message;
                     }
-                    Console.WriteLine(username + " :" + message);
-                    Console.WriteLine(DateTime.Now.ToLongTimeString() + "\n");
-                    HistoryList.Add(username + " :"+ message + " " + DateTime.Now.ToLongTimeString() + "\n");
+                    else
+                    {
+                        Console.WriteLine(username + " :" + message);
+                        Console.WriteLine(DateTime.Now.ToLongTimeString() + "\n");
+                        HistoryList.Add(username + " :" + message + " " + DateTime.Now.ToLongTimeString() + "\n");
+                    }
+                   
                 }
             }
             catch
@@ -178,16 +184,20 @@ namespace P2PChat
         }
         protected internal void BroadcastMessage(string message)
         {
-
-            
-            HistoryList.Add(ClientName +" :"  + message + " " + DateTime.Now.ToLongTimeString());
             var messageBytes = Encoding.UTF8.GetBytes(message);
-            ConnectedUser.ForEach(client =>
-           {
-               var clientStream = client.chatConnection.GetStream();
+            
+                HistoryList.Add(ClientName + " :" + message + " " + DateTime.Now.ToLongTimeString());
+               
+                ConnectedUser.ForEach(client =>
+                {
+                    var clientStream = client.chatConnection.GetStream();
 
-               clientStream.Write(messageBytes, 0, messageBytes.Length);
-           });
+                    clientStream.Write(messageBytes, 0, messageBytes.Length);
+                });
+            
+ 
+            
+           
         }
         public void RecvHistory()
         {

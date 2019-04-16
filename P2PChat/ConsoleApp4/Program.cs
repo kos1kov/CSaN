@@ -51,7 +51,7 @@ namespace P2PChat
                     data = Console.ReadLine();
                     Console.WriteLine(DateTime.Now.ToLongTimeString());
                     Console.WriteLine();
-                    chat.BroadcastMessage(data);
+                    
                     if(data == "!history")
                     {
                         chat.RecvHistory();
@@ -65,6 +65,10 @@ namespace P2PChat
                             }
                             Console.WriteLine("history end");
                         }
+                    }
+                    else
+                    {
+                        chat.BroadcastMessage(data);
                     }
                 }
 
