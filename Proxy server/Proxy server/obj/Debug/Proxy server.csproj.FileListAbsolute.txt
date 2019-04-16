@@ -1,0 +1,7 @@
+C:\Users\dimak\source\repos\Proxy server\Proxy server\bin\Debug\Proxy server.exe.config
+C:\Users\dimak\source\repos\Proxy server\Proxy server\bin\Debug\Proxy server.exe
+C:\Users\dimak\source\repos\Proxy server\Proxy server\bin\Debug\Proxy server.pdb
+C:\Users\dimak\source\repos\Proxy server\Proxy server\obj\Debug\Proxy server.csprojAssemblyReference.cache
+C:\Users\dimak\source\repos\Proxy server\Proxy server\obj\Debug\Proxy server.csproj.CoreCompileInputs.cache
+C:\Users\dimak\source\repos\Proxy server\Proxy server\obj\Debug\Proxy server.exe
+C:\Users\dimak\source\repos\Proxy server\Proxy server\obj\Debug\Proxy server.pdb
