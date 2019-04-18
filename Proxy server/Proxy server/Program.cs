@@ -12,11 +12,11 @@ namespace Proxy_server
 {
     class Program
     {
-      
+
         static void Main(string[] args)
         {
-            //var listener = new HttpListener(8080);
-            var listener = new TcpListener(IPAddress.Parse("127.0.0.1") ,8080);
+            
+            var listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8080);
             listener.Start();
 
             while (true)
@@ -29,9 +29,9 @@ namespace Proxy_server
 
 
         }
-       public static void RecvData(TcpClient client)
+        public static void RecvData(TcpClient client)
         {
-            
+
             NetworkStream stream = client.GetStream();
             byte[] buf;
             buf = new byte[16000];
@@ -39,33 +39,31 @@ namespace Proxy_server
             {
                 if (!stream.CanRead)
                     return;
-                if (stream.Read(buf,0,buf.Length).Equals(0))
-                    return;
-               // stream.Read(buf, 0, buf.Length);
+
+                stream.Read(buf, 0, buf.Length);
                 HTTPserv(buf, client);
             }
-         
-       }
+
+        }
 
 
-        public static void HTTPserv(byte[] buf,TcpClient client)
+        public static void HTTPserv(byte[] buf, TcpClient client)
         {
             try
             {
-
-               string htmlBody =
-            "<html><body><h1>Error</h1></body></html>";
                 NetworkStream stream = client.GetStream();
                 string[] temp = Encoding.ASCII.GetString(buf).Trim().Split(new char[] { '\r', '\n' });
                 string req = temp.FirstOrDefault(x => x.Contains("Host"));
                 req = req.Substring(req.IndexOf(" ") + 1);
-                
+
                 var blacklist = ConfigurationManager.AppSettings;
                 foreach (var key in blacklist.AllKeys)
                 {
                     if (parser(req).Equals(key))
                     {
-                        stream.Write(Encoding.ASCII.GetBytes(htmlBody),0, Encoding.ASCII.GetBytes(htmlBody).Length);
+                        string htmlBody = "<html><body><h1>Error</h1></body></html>";
+                        byte[] errorBodyBytes = Encoding.ASCII.GetBytes(htmlBody);
+                        stream.Write(errorBodyBytes, 0, errorBodyBytes.Length);
                         return;
                     }
                 }
@@ -74,18 +72,16 @@ namespace Proxy_server
                 servStream.Write(buf, 0, buf.Length);
                 var respBuf = new byte[32];
 
-                //this is to capture status of http request and log it.
-
                 servStream.Read(respBuf, 0, respBuf.Length);
 
                 stream.Write(respBuf, 0, respBuf.Length);
 
-                var headers = Encoding.UTF8.GetString(respBuf).Split(new char[] { '\r', '\n' });
+                var head = Encoding.UTF8.GetString(respBuf).Split(new char[] { '\r', '\n' });
 
-                string ResponseCode = headers[0].Substring(headers[0].IndexOf(" ") + 1);
+                string ResponseCode = head[0].Substring(head[0].IndexOf(" ") + 1);
                 Console.WriteLine($"\n{req} {ResponseCode}");
                 servStream.CopyTo(stream);
-                
+
             }
             catch
             {
@@ -95,14 +91,14 @@ namespace Proxy_server
             {
                 client.Dispose();
             }
-           
+
         }
 
         public static string parser(string name)
         {
             if (name.Contains("www."))
             {
-               return name.Replace("www.", string.Empty);
+                return name.Replace("www.", string.Empty);
             }
             if (name.Contains("https://www."))
             {
@@ -116,5 +112,5 @@ namespace Proxy_server
         }
 
     }
-   
+
 }
